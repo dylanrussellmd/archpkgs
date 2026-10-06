@@ -9,6 +9,17 @@ Everything is signed with the archpkgs key (`archpkgs.asc` in this repo).
 Only redistributable software belongs here: no proprietary binaries such as Citrix
 Workspace.
 
+## Current release contents
+
+The `x86_64` release currently contains these packages (release asset versions):
+
+| Package | Version | Reason |
+|---|---|---|
+| `webkit2gtk` | `2.50.6-8` | Long AUR build; Citrix dependency |
+| `libsoup` | `2.74.3-4` | Citrix dependency; AUR `check()` needs Apache |
+| `libjxl-0.11` | `0.11.2-1` | Pinned `icaclient` build dependency |
+| `qml-language-server-git` | `r62.767f2d0-1` | AUR build fails on a Go proxy 403 |
+
 ## Use it
 
 ```sh
@@ -32,9 +43,14 @@ Server = https://github.com/dylanrussellmd/archpkgs/releases/download/x86_64
 ARCHPKGS_KEY=E8C3E50D7ADC0639B86AD5AB9F5B63EC5E895468 ./publish.sh /path/to/name-ver-rel-x86_64.pkg.tar.zst
 ```
 
-Build packages with `makepkg` (or recreate an installed one with `bacman`), then
-publish. `publish.sh` signs each package, updates `archpkgs.db` with `repo-add
---sign`, and uploads both to the release.
+Build packages with `makepkg` (or recreate an installed one with `fakepkg`), then
+publish. `publish.sh` creates the `x86_64` release if needed, downloads its
+existing database/index assets, signs each new package, and updates the
+database with `repo-add --sign` (replacing an existing package of the same
+name). It replaces `repo-add`'s database symlinks with regular copies, then
+uploads each package and signature plus signed `archpkgs.db`/`archpkgs.files`
+indexes in both pacman-requested flat names and `.tar.gz` archive names. Existing
+release packages remain listed in the updated database.
 
 ## Repackaging an installed package (no rebuild)
 
@@ -51,7 +67,7 @@ bash fakepkg-1.42.2/fakepkg -o out <package>
 pacman -Qip out/*.pkg.tar.zst      # no warnings
 ```
 
-The 2026-10-05 `webkit2gtk` 2.50.6-8 and `libjxl-0.11` 0.11.2-1 uploads were made
+The `webkit2gtk` 2.50.6-8 and `libjxl-0.11` 0.11.2-1 uploads were made
 this way from the copies installed on `home` (both built from their AUR
 PKGBUILDs). Each was checked by installing it into an empty root
 (`pacman --root … -Udd`) and running `pacman -Qkk`.
