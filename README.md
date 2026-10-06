@@ -35,3 +35,23 @@ ARCHPKGS_KEY=E8C3E50D7ADC0639B86AD5AB9F5B63EC5E895468 ./publish.sh /path/to/name
 Build packages with `makepkg` (or recreate an installed one with `bacman`), then
 publish. `publish.sh` signs each package, updates `archpkgs.db` with `repo-add
 --sign`, and uploads both to the release.
+
+## Repackaging an installed package (no rebuild)
+
+`bacman` is no longer shipped by `pacman-contrib`. Its successor,
+[fakepkg](https://github.com/Edenhofer/fakepkg) 1.42.2, reassembles a package from
+an installed one, but writes the package base as `base`, which pacman reports as
+an unknown key. Map it to `pkgbase` before use:
+
+```sh
+curl -fsSL https://github.com/Edenhofer/fakepkg/archive/v1.42.2.tar.gz | tar xz
+sed -i 's/^\t\t\t\t"conflicts")    PKG_VAR=conflict;;/&\n\t\t\t\t"base")         PKG_VAR=pkgbase;;/' fakepkg-1.42.2/fakepkg
+bash fakepkg-1.42.2/fakepkg -o out <package>
+# rename to name-ver-rel-x86_64.pkg.tar.zst, then verify:
+pacman -Qip out/*.pkg.tar.zst      # no warnings
+```
+
+The 2026-10-05 `webkit2gtk` 2.50.6-8 and `libjxl-0.11` 0.11.2-1 uploads were made
+this way from the copies installed on `home` (both built from their AUR
+PKGBUILDs). Each was checked by installing it into an empty root
+(`pacman --root … -Udd`) and running `pacman -Qkk`.
