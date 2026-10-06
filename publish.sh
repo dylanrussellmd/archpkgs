@@ -39,8 +39,10 @@ done
 
 # pacman requests archpkgs.db / archpkgs.files; release assets cannot be symlinks.
 for kind in db files; do
-	cp -f "$WORK/$REPO.$kind.tar.gz" "$WORK/$REPO.$kind"
-	cp -f "$WORK/$REPO.$kind.tar.gz.sig" "$WORK/$REPO.$kind.sig"
+	# repo-add leaves these as symlinks; replace them with real copies.
+	rm -f "$WORK/$REPO.$kind" "$WORK/$REPO.$kind.sig"
+	cp "$WORK/$REPO.$kind.tar.gz" "$WORK/$REPO.$kind"
+	cp "$WORK/$REPO.$kind.tar.gz.sig" "$WORK/$REPO.$kind.sig"
 	upload+=("$WORK/$REPO.$kind" "$WORK/$REPO.$kind.sig" "$WORK/$REPO.$kind.tar.gz" "$WORK/$REPO.$kind.tar.gz.sig")
 done
 
